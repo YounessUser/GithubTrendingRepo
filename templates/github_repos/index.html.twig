@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello GithubReposController!{% endblock %}
+
+{% block body %}
+
+    <div class="repos-by-language-table-container w-100 overflow-auto">
+        <h1>100 trending repositories created in the last 30 days</h1>
+        <table id="repos-by-language-table" class="table">
+            <thead>
+            <tr>
+                <th>Language</th>
+                <th>Total</th>
+                <th>Display More</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for language, repos in reposByLanguage %}
+                <tr>
+                    <th>{{ language }}</th>
+                    <th>{{ repos|length }}</th>
+                    <th><a href="#repos-table-container" class="btn btn-dark"
+                           onclick="DisplayMore('{{ language }}')">+</a></th>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation example" class="w-100 m-auto">
+            <ul class="pagination">
+
+            </ul>
+        </nav>
+    </div>
+
+    <hr>
+
+    <div id="display-more-repos-section" class=" w-100 overflow-auto">
+        <h3></h3>
+        <table id="repos-table" class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Owner</th>
+                <th>Discription</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        const perPage = 5;
+        $(document).ready(function () {
+            //hide section display more repositories by language
+            $("#display-more-repos-section").hide();
+
+            //initialize pagination for table #repos-by-language-table
+            let reposByLanguage = {{ reposByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
+            let totalPages = parseInt(Object.keys(reposByLanguage).length / perPage);
+            totalPages += (Object.keys(reposByLanguage).length % perPage > 0) ? 1 : 0;
+            Array.from({length: totalPages}, (_, i) => i + 1).forEach((page) => {
+                $("ul.pagination").append(`
+                        <li class="page-item"><a class="page-link p-4" href="#" onclick="navigate(` + page + `)">` + page + `</a></li>
+                    `
+                )
+            });
+            navigate();
+        });
+
+
+        /**
+         * get data by page
+         * @param page
+         */
+        function navigate(page = 1) {
+            let reposByLanguage = {{ reposByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
+            $("#repos-by-language-table tbody").empty();
+            let languages = Object.keys(reposByLanguage).slice((page - 1) * perPage, page * perPage);
+            languages.forEach((language) => {
+                $("#repos-by-language-table tbody").append(`
+                    <tr>
+                        <th>` + language + `</th>
+                        <th>` + reposByLanguage[language].length + `</th>
+                         <th><a href="#display-more-repos-section" class="btn btn-dark" onclick="DisplayMore('` + language + `')">+</a></th>
+                    </tr>
+                `);
+            });
+        }
+
+        /**
+         * get list repositories by language
+         * @param language
+         * @constructor
+         */
+        function DisplayMore(language) {
+            if (language) {
+                let reposByLanguage = {{ reposByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
+                let repos = reposByLanguage[language];
+
+                $("#display-more-repos-section").show();
+                $("h3").text("List trending repositories for : " + language);
+                $("#repos-table tbody").empty();
+
+                if (!!repos && repos.length > 0) {
+                    repos.forEach((repo) => {
+                        $("#repos-table tbody").append(`
+                            <tr>
+                                <th class="w-25"><a href="` + repo["svn_url"] + `" class="btn btn-link" target="_blank">`+ repo["name"] +`</a></th>
+                                <th>` + repo["owner"]["login"] + `</th>
+                                <th>` + repo["description"] + `</th>
+                            </tr>
+                        `);
+                    });
+                }
+            }
+        }
+    </script>
+{% endblock %}
