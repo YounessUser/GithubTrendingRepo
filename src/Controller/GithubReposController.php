@@ -26,12 +26,12 @@ class GithubReposController extends AbstractController
         $repos = $response->toArray();
 
         // group repositories by language
-        $reposByLanguage = $arrayHelper->groupByProperty($repos["items"], 'language', 'None');
+        $reposGroupedByLanguage = $arrayHelper->groupByProperty($repos["items"], 'language', 'None');
 
 
         return $this->render('github_repos/index.html.twig', [
             'controller_name' => 'GithubReposController',
-            'reposByLanguage' => $reposByLanguage
+            'reposGroupedByLanguage' => $reposGroupedByLanguage
         ]);
     }
 

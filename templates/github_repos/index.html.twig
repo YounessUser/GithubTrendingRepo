@@ -15,7 +15,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for language, repos in reposByLanguage %}
+            {% for language, repos in reposGroupedByLanguage %}
                 <tr>
                     <th>{{ language }}</th>
                     <th>{{ repos|length }}</th>
@@ -59,9 +59,9 @@
             $("#display-more-repos-section").hide();
 
             //initialize pagination for table #repos-by-language-table
-            let reposByLanguage = {{ reposByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
-            let totalPages = parseInt(Object.keys(reposByLanguage).length / perPage);
-            totalPages += (Object.keys(reposByLanguage).length % perPage > 0) ? 1 : 0;
+            let reposGroupedByLanguage = {{ reposGroupedByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
+            let totalPages = parseInt(Object.keys(reposGroupedByLanguage).length / perPage);
+            totalPages += (Object.keys(reposGroupedByLanguage).length % perPage > 0) ? 1 : 0;
             Array.from({length: totalPages}, (_, i) => i + 1).forEach((page) => {
                 $("ul.pagination").append(`
                         <li class="page-item"><a class="page-link p-4" href="#" onclick="navigate(` + page + `)">` + page + `</a></li>
@@ -77,14 +77,14 @@
          * @param page
          */
         function navigate(page = 1) {
-            let reposByLanguage = {{ reposByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
+            let reposGroupedByLanguage = {{ reposGroupedByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
             $("#repos-by-language-table tbody").empty();
-            let languages = Object.keys(reposByLanguage).slice((page - 1) * perPage, page * perPage);
+            let languages = Object.keys(reposGroupedByLanguage).slice((page - 1) * perPage, page * perPage);
             languages.forEach((language) => {
                 $("#repos-by-language-table tbody").append(`
                     <tr>
                         <th>` + language + `</th>
-                        <th>` + reposByLanguage[language].length + `</th>
+                        <th>` + reposGroupedByLanguage[language].length + `</th>
                          <th><a href="#display-more-repos-section" class="btn btn-dark" onclick="DisplayMore('` + language + `')">+</a></th>
                     </tr>
                 `);
@@ -98,8 +98,8 @@
          */
         function DisplayMore(language) {
             if (language) {
-                let reposByLanguage = {{ reposByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
-                let repos = reposByLanguage[language];
+                let reposGroupedByLanguage = {{ reposGroupedByLanguage|json_encode()|replace({'&quot;' : '"'})|raw }};
+                let repos = reposGroupedByLanguage[language];
 
                 $("#display-more-repos-section").show();
                 $("h3").text("List trending repositories for : " + language);
